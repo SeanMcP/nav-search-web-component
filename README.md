@@ -12,6 +12,7 @@
 
 This web component starts with a search input child and a datalist and adds all
 of the logic to render a searchable list of links.
+
 - 🛠️ Customizable template
 - ⛹️‍♀️ Debounced searching
 
