@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nav Search Web Component</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+        }
+
+        #styled .option {
+            align-items: center;
+            display: flex;
+            gap: 0.5ch;
+        }
+        #styled .option span {
+            background-color: blue;
+            color: white;
+            font-size: x-small;
+            padding: 0.5ch 1ch;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        #styled .option span:empty {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Nav Search Web Component</h1>
+        <h2>Default</h2>
+        <nav-search>
+            <input aria-label="search" type="search" list="elements" />
+        </nav-search>
+        <h2>With template</h2>
+        <nav-search>
+            <input aria-label="search" type="search" list="elements" />
+            <template>
+                <a class="option" href="%value%">Element: %label% (%value%) <span>%data.family%</span></a>
+            </template>
+        </nav-search>
+        <h2>Styled</h2>
+        <nav-search id="styled">
+            <input aria-label="search" type="search" list="elements" />
+            <template>
+                <a class="option" href="%value%">Element: %label% (%value%) <span>%data.family%</span></a>
+            </template>
+        </nav-search>
+
+        <datalist id="elements">
+            <option value="#Hydrogen">H</option>
+            <option value="#Helium">He</option>
+            <option value="#Lithium">Li</option>
+            <option value="#Beryllium">Be</option>
+            <option value="#Boron">B</option>
+            <option value="#Carbon">C</option>
+            <option value="#Nitrogen">N</option>
+            <option value="#Oxygen">O</option>
+            <option value="#Fluorine">F</option>
+            <option value="#Neon" data-family="Noble gas">Ne</option>
+            <option value="#Sodium">Na</option>
+            <option value="#Magnesium">Mg</option>
+            <option value="#Aluminum">Al</option>
+            <option value="#Silicon">Si</option>
+            <option value="#Phosphorus">P</option>
+            <option value="#Sulfur">S</option>
+            <option value="#Chlorine">Cl</option>
+            <option value="#Argon" data-family="Noble gas">Ar</option>
+            <option value="#Potassium">K</option>
+            <option value="#Calcium">Ca</option>
+            <option value="#Scandium">Sc</option>
+            <option value="#Titanium">Ti</option>
+            <option value="#Vanadium">V</option>
+            <option value="#Chromium">Cr</option>
+            <option value="#Manganese">Mn</option>
+            <option value="#Iron">Fe</option>
+          </datalist>
+    </main>
+    <script type="module">
+        import NavSearch from './nav-search.js';
+
+        customElements.define(...NavSearch);
+    </script>
+</body>
+</html>
