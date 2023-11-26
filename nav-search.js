@@ -26,6 +26,17 @@ export class NavSearch extends HTMLElement {
    * @type {Array<Option>}
    */
   _options = [];
+  /** @type {string} */
+  _uuid = "";
+
+  constructor() {
+    super();
+
+    this._uuid =
+      "crypto" in window
+        ? window.crypto.randomUUID()
+        : Math.random().toString(36).substring(2, 15);
+  }
 
   connectedCallback() {
     const inputElement = this.querySelector("input[type=search]");
@@ -46,8 +57,35 @@ export class NavSearch extends HTMLElement {
 
     inputElement.dataset.oldList = inputElement.getAttribute("list");
     inputElement.removeAttribute("list");
+    inputElement.setAttribute("aria-controls", this._uuid);
+    inputElement.setAttribute("aria-expanded", "false");
 
-    // Store option data internally
+    this.buildOptionsData(datalistElement);
+
+    const template = this.querySelector("template");
+    // Should we ever update this value?
+    const templateHTML = template?.innerHTML.trim();
+
+    const navElement = document.createElement("nav");
+    navElement.setAttribute("id", this._uuid);
+    this.appendChild(navElement);
+
+    inputElement.addEventListener(
+      "input",
+      this.getHandleInput(inputElement, navElement, templateHTML)
+    );
+
+    this.addEventListener(
+      "keydown",
+      this.getHandleKeydown(inputElement, navElement)
+    );
+  }
+
+  /**
+   * Converts option markup from datalistElement to internal data structure
+   * @param {HTMLDataListElement} datalistElement
+   */
+  buildOptionsData(datalistElement) {
     datalistElement.querySelectorAll("option").forEach((option) => {
       const value = option.value;
       const label = option.label || option.textContent;
@@ -59,39 +97,12 @@ export class NavSearch extends HTMLElement {
         value,
       });
     });
-
-    const template = this.querySelector("template");
-    // Should we ever update this value?
-    const templateHTML = template?.innerHTML.trim();
-
-    const navElement = document.createElement("nav");
-    this.appendChild(navElement);
-
-    inputElement.addEventListener(
-      "input",
-      debounce((e) => {
-        const query = e.target.value.toLowerCase();
-        if (query.length === 0) {
-          navElement.textContent = "";
-          return;
-        }
-
-        let html = "";
-
-        this._options.forEach((option) => {
-          if (option.search.includes(query)) {
-            html += this.buildResultMarkup(option, templateHTML);
-          }
-        });
-
-        navElement.innerHTML = html;
-      }, 300)
-    );
   }
 
   /**
-   * @param {Option} option 
-   * @param {(string|undefined)} templateHTML 
+   * Builds the HTML markup for a single search result
+   * @param {Option} option
+   * @param {(string|undefined)} templateHTML
    * @returns string
    */
   buildResultMarkup(option, templateHTML) {
@@ -108,6 +119,102 @@ export class NavSearch extends HTMLElement {
         });
     }
     return `<a href=${option.value}>${option.label}</a>`;
+  }
+
+  /**
+   * Creates a debounced input event handler for inputElement
+   * @param {HTMLInputElement} inputElement
+   * @param {HTMLElement} navElement
+   * @param {string | undefined} templateHTML
+   * @returns {function(KeyboardEvent): void} Input event handler
+   */
+  getHandleInput(inputElement, navElement, templateHTML) {
+    return debounce((e) => {
+      const query = e.target.value.toLowerCase();
+
+      if (query.length === 0) {
+        inputElement.setAttribute("aria-expanded", "false");
+        navElement.textContent = "";
+        return;
+      }
+
+      let html = "";
+
+      this._options.forEach((option) => {
+        if (option.search.includes(query)) {
+          html += this.buildResultMarkup(option, templateHTML);
+        }
+      });
+
+      if (html.length > 0) {
+        inputElement.setAttribute("aria-expanded", "true");
+      }
+
+      navElement.innerHTML = html;
+    }, 300);
+  }
+
+  /**
+   * Creates a keydown event handler for the :host element
+   * @param {HTMLInputElement} inputElement
+   * @param {HTMLElement} navElement
+   * @returns {function(KeyboardEvent): void} Keypress event handler
+   */
+  getHandleKeydown(inputElement, navElement) {
+    return (e) => {
+      if (e.target === inputElement) {
+        switch (e.key) {
+          case "ArrowDown": {
+            e.preventDefault();
+            const firstChild = navElement.firstElementChild;
+            if (firstChild) {
+              firstChild.focus();
+            }
+            break;
+          }
+          case "Escape": {
+            e.preventDefault();
+            inputElement.setAttribute("aria-expanded", "false");
+            inputElement.value = "";
+            navElement.textContent = "";
+            break;
+          }
+        }
+      }
+
+      if (navElement.contains(e.target)) {
+        switch (e.key) {
+          case "ArrowDown": {
+            e.preventDefault();
+            const nextSibling = e.target.nextElementSibling;
+            if (nextSibling) {
+              nextSibling.focus();
+            }
+            break;
+          }
+          case "ArrowUp": {
+            e.preventDefault();
+            const previousSibling = e.target.previousElementSibling;
+            if (previousSibling) {
+              previousSibling.focus();
+            }
+            break;
+          }
+          case "Escape": {
+            e.preventDefault();
+            inputElement.focus();
+            inputElement.setAttribute("aria-expanded", "false");
+            navElement.textContent = "";
+            break;
+          }
+          case "Space": {
+            e.preventDefault();
+            e.target.click();
+            break;
+          }
+        }
+      }
+    };
   }
 }
 

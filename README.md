@@ -1,10 +1,6 @@
-# Nav Search Web Component
-
-<div style="background:black;color:white;text-align:center">
-
 **🚧 This component is currently under construction 🚧**
 
-</div>
+# Nav Search Web Component
 
 🧭 A web component for searching and navigating links
 
@@ -13,6 +9,7 @@
 This web component starts with a search input child and a datalist and adds all
 of the logic to render a searchable list of links.
 
+- ♿ Accessible markup and event handling
 - 🛠️ Customizable template
 - ⛹️‍♀️ Debounced searching
 
